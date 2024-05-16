@@ -1,4 +1,4 @@
-![Logo](https://i.ibb.co/jWdZPhm/DALL-E-2024-04-09-14-26-09-Design-a-logo-for-a-command-line-tool-named-Compass-The-logo-should-visua.webp)
+![Logo](https://i.postimg.cc/TYyLZP0m/Compass-1.jpg)
 
 ## Compass: Ferramenta de Linha de Comando para Projetos Laravel com Docker Compose
 
