@@ -1,0 +1,370 @@
+#!/bin/bash
+
+# Nome do serviço PHP definido no docker-compose.yml
+SERVICE_NAME="app"
+
+# Cores ANSI
+VERDE="\033[32m"
+AMARELO="\033[33m"
+AZUL="\033[34m"
+VERMELHO="\033[31m"
+RESET="\033[0m"
+
+# Função para mostrar a tabela de uso
+show_usage() {
+    echo -e "\nUsage: $0 [command]\n"
+    echo -e "\n  ${AMARELO}DOCKER${RESET}"
+    echo -e "  ${VERDE}up${RESET}            - Inicia todos os serviços em modo detached."
+    echo -e "  ${VERDE}down${RESET}          - Para e remove todos os containers e redes."
+    echo -e "  ${VERDE}restart${RESET}        - Reinicia todos os serviços."
+    echo -e "  ${VERDE}build${RESET}         - Constrói ou reconstrói os serviços."
+    echo -e "  ${VERDE}logs${RESET}          - Exibe os logs dos serviços."
+    echo -e "  ${VERDE}pause${RESET}         - Pausa todos os serviços."
+    echo -e "  ${VERDE}unpause${RESET}       - Despausa todos os serviços pausados."
+    echo -e "  ${VERDE}ps${RESET}            - Lista os containers em execução."
+    echo -e "  ${VERDE}images${RESET}        - Lista as imagens do Docker Compose."
+    echo -e "  ${VERDE}exec <serviço> <comando>${RESET} - Executa um comando em um container específico."
+    echo -e "  ${VERDE}down --volumes${RESET}  - Para os containers e remove os volumes."
+    echo -e "  ${VERDE}prune${RESET}           - Remove containers, redes, volumes e imagens não utilizados."
+
+    echo -e "\n  ${AMARELO}Laravel${RESET}"
+    echo -e "  ${VERDE}artisan${RESET}        - Executa um comando Artisan."
+    echo -e "  ${VERDE}tinker${RESET}          - Abre o Tinker (console interativo do Laravel)."
+    echo -e "  ${VERDE}routes${RESET}          - Exibe a lista de rotas do Laravel."
+    echo -e "  ${VERDE}test${RESET}            - Executa os testes do Laravel."
+    echo -e "  ${VERDE}test:filter <nome_do_teste>${RESET} - Executa um teste específico."
+    echo -e "  ${VERDE}test:all${RESET}   - Executa os testes em todas as branches (exceto a atual)."
+    echo -e "  ${VERDE}env${RESET}             - Exibe as variáveis de ambiente do projeto."
+    echo -e "  ${VERDE}migrate${RESET}       - Executa as migrations do banco de dados."
+    echo -e "  ${VERDE}db:seed${RESET}       - Executa os seeders do banco de dados."
+    echo -e "  ${VERDE}queue:work${RESET}    - Inicia o worker para processar as filas."
+    echo -e "  ${VERDE}queue:listen${RESET}  - Inicia o listener para escutar as filas."
+    echo -e "  ${VERDE}schedule:run${RESET}  - Executa as tarefas agendadas."
+    echo -e "  ${VERDE}storage:link${RESET}  - Cria um link simbólico para a pasta storage/app/public."
+
+    echo -e "\n  ${AMARELO}Laravel - Criação${RESET}"
+    echo -e "  ${VERDE}make${RESET}          - Cria um modelo, migration, controller, factory e testes de um modelo."
+    echo -e "  ${VERDE}make:controller${RESET} - Cria um novo controlador."
+    echo -e "  ${VERDE}make:model${RESET}      - Cria um novo modelo."
+    echo -e "  ${VERDE}make:command${RESET}    - Cria um novo comando."
+    echo -e "  ${VERDE}make:migration${RESET}  - Cria uma nova migração."
+    echo -e "  ${VERDE}make:middleware${RESET}  - Cria um novo middleware."
+    echo -e "  ${VERDE}make:seeder${RESET}     - Cria um novo seeder."
+    echo -e "  ${VERDE}make:factory${RESET}    - Cria uma nova factory."
+    echo -e "  ${VERDE}make:policy${RESET}     - Cria uma nova policy."
+    echo -e "  ${VERDE}make:resource${RESET}   - Cria um novo resource."
+    echo -e "  ${VERDE}make:observer${RESET}   - Cria um novo observer."
+    echo -e "  ${VERDE}make:request${RESET}    - Cria um novo request."
+    echo -e "  ${VERDE}make:job${RESET}        - Cria um novo job."
+    echo -e "  ${VERDE}make:event${RESET}      - Cria um novo event."
+    echo -e "  ${VERDE}make:listener${RESET}   - Cria um novo listener."
+    echo -e "  ${VERDE}make:channel${RESET}    - Cria um novo channel."
+    echo -e "  ${VERDE}make:mail${RESET}       - Cria um novo mail."
+    echo -e "  ${VERDE}make:notification${RESET} - Cria uma nova notification."
+
+    echo -e "\n  ${AMARELO}Gerenciamento de Projeto${RESET}"
+    echo -e "  ${VERDE}install${RESET}       - Instala as dependências do projeto."
+
+    echo -e "\n  ${AMARELO}Otimização e Produtividade${RESET}"
+    echo -e "  ${VERDE}analyze${RESET}         - Executa análise estática de código."
+    echo -e "  ${VERDE}format${RESET}          - Formata o código automaticamente."
+    echo -e "  ${VERDE}optimize${RESET}        - Otimiza o desempenho do aplicativo."
+    echo -e "  ${VERDE}fresh${RESET}          - Redefine o banco de dados."
+
+    echo -e "\n  ${AMARELO}Outros${RESET}"
+    echo -e "  ${VERDE}shell${RESET}         - Abre um shell interativo no container."
+    echo -e "  ${VERDE}php <comando>${RESET}   - Executa um comando PHP arbitrário."
+    echo -e "  ${VERDE}composer <comando>${RESET} - Executa um comando Composer."
+    echo -e "  ${VERDE}npm <comando>${RESET}   - Executa um comando npm."
+}
+
+case "$1" in
+    up)
+    docker-compose up -d
+    echo -e "${VERDE}Serviços iniciados.${RESET}" # Verde
+    ;;
+  down)
+    docker-compose down
+    echo -e "${VERMELHO}Serviços parados.${RESET}" # Vermelho
+    ;;
+  restart)
+    docker-compose down && docker-compose up -d
+    echo -e "${AMARELO}Serviços reiniciados.${RESET}" # Amarelo
+    ;;
+  build)
+    docker-compose build
+    echo -e "${AZUL}Serviços construídos.${RESET}" # Azul
+    ;;
+  artisan)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan "$@"
+    ;;
+  npm)
+    shift
+    docker-compose run --rm $SERVICE_NAME npm "$@"
+    ;;
+  composer)
+    shift
+    docker-compose run --rm $SERVICE_NAME composer "$@"
+    ;;
+  test)
+    docker-compose exec $SERVICE_NAME php artisan test
+    ;;
+    test:filter)
+    docker-compose exec $SERVICE_NAME php artisan test --filter="$2"
+    ;;
+  logs)
+    docker-compose logs -f
+    ;;
+  shell)
+    winpty docker-compose exec $SERVICE_NAME //bin//bash
+    ;;
+  pause)
+    docker-compose pause
+    echo -e "${AMARELO}Serviços pausados.${RESET}" # Amarelo
+    ;;
+  unpause)
+    docker-compose unpause
+    echo -e "${VERDE}Serviços despausados.${RESET}" # Verde
+    ;;
+  ps)
+    docker-compose ps
+    ;;
+  images)
+    docker-compose images
+    ;;
+  make)
+    if [ $# -lt 2 ]; then
+        echo "Usage: $0 make-all ModelName"
+        return
+    fi
+    shift
+    MODEL_NAME="$1"
+    docker-compose exec $SERVICE_NAME php artisan make:model $MODEL_NAME --all
+    docker-compose exec $SERVICE_NAME php artisan make:test ${MODEL_NAME}Test
+    echo -e "${VERDE}Modelo $MODEL_NAME com migration, controller, factory e teste criados.${RESET}" # Verde
+    ;;
+  install)
+    docker-compose run --rm $SERVICE_NAME composer install
+    docker-compose run --rm $SERVICE_NAME npm install
+    docker-compose run --rm $SERVICE_NAME npm run dev
+    echo -e "${VERDE}Dependências instaladas.${RESET}" # Verde
+    ;;
+  migrate)
+    docker-compose exec $SERVICE_NAME php artisan migrate
+    ;;
+  db:seed)
+    docker-compose exec $SERVICE_NAME php artisan db:seed
+    ;;
+  make:controller)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:controller "$@"
+    ;;
+  make:command)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:command "$@"
+    ;;
+    make:model)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:model "$@"
+    ;;
+    make:middleware)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:middleware "$@"
+    ;;
+    make:seeder)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:seeder "$@"
+    ;;
+    make:factory)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:factory "$@"
+    ;;
+    make:policy)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:policy "$@"
+    ;;
+    make:resource)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:resource "$@"
+    ;;
+    make:observer)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:observer "$@"
+    ;;
+    make:request)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:request "$@"
+    ;;
+    make:job)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:job "$@"
+    ;;
+    make:event)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:event "$@"
+    ;;
+    make:listener)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:listener "$@"
+    ;;
+    make:channel)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:channel "$@"
+    ;;
+    make:mail)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:mail "$@"
+    ;;
+    make:notification)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:notification "$@"
+    ;;
+    make:migration)
+    shift
+    docker-compose exec $SERVICE_NAME php artisan make:migration "$@"
+    ;;
+  queue:work)
+    docker-compose exec $SERVICE_NAME php artisan queue:work
+    ;;
+  queue:listen)
+    docker-compose exec $SERVICE_NAME php artisan queue:listen
+    ;;
+  schedule:run)
+    docker-compose exec $SERVICE_NAME php artisan schedule:run
+    ;;
+  storage:link)
+    docker-compose exec $SERVICE_NAME php artisan storage:link
+    ;;
+  exec)
+    shift
+    docker-compose exec "$@"
+    ;;
+  down)
+    if [ "$2" = "--volumes" ]; then
+      docker-compose down -v
+    else
+      docker-compose down
+    fi
+    ;;
+  prune)
+    docker-compose down -v --rmi all --remove-orphans
+    docker volume prune -f
+    docker image prune -f
+    ;;
+  tinker)
+    docker-compose exec $SERVICE_NAME php artisan tinker
+    ;;
+test:all)
+    # Obtém todas as branches locais (excluindo a atual)
+    BRANCHES=($(git branch --format='%(refname:short)' | grep -v "$(git rev-parse --abbrev-ref HEAD)"))
+
+    PASSED_BRANCHES=()
+    FAILED_BRANCHES=()
+
+    for BRANCH in "${BRANCHES[@]}"; do
+        echo "Testando branch: $BRANCH"
+
+        # Faz o checkout da branch
+        git checkout $BRANCH
+
+        # Executa os testes dentro do container
+        docker-compose exec $SERVICE_NAME php artisan test
+
+        # Verifica o resultado dos testes e armazena em arrays
+        if [ $? -eq 0 ]; then
+            PASSED_BRANCHES+=("$BRANCH")
+        else
+            FAILED_BRANCHES+=("$BRANCH")
+        fi
+    done
+
+    # Exibe o resumo dos testes
+    if [ ${#PASSED_BRANCHES[@]} -gt 0 ]; then
+        echo -e "\n${VERDE}Testes passaram nas seguintes branches:${RESET}"
+        printf '%s\n' "${PASSED_BRANCHES[@]}"
+    fi
+
+    if [ ${#FAILED_BRANCHES[@]} -gt 0 ]; then
+        echo -e "\n${VERMELHO}Testes falharam nas seguintes branches:${RESET}"
+        printf '%s\n' "${FAILED_BRANCHES[@]}"
+    fi
+
+    # Verifica se houve falhas e define o código de saída do script
+    if [ ${#FAILED_BRANCHES[@]} -gt 0 ]; then
+        exit 1
+    else
+        echo -e "\n${VERDE}Todos os testes foram executados.${RESET}"
+    fi
+    ;;
+  env)
+    # Implemente a lógica para exibir as variáveis de ambiente
+    echo -e "${AZUL}Variáveis de ambiente:${RESET}"
+    cat .env
+    ;;
+  php)
+    shift
+    docker-compose exec $SERVICE_NAME php "$@"
+    ;;
+optimize)
+    # Otimiza o desempenho do aplicativo
+    docker-compose exec $SERVICE_NAME php artisan optimize
+    ;;
+analyze)
+    # Verifica se o Larastan está instalado
+    if ! docker-compose exec $SERVICE_NAME bash -c "composer show larastan/larastan > /dev/null 2>&1" ; then
+        echo -e "${AMARELO}Larastan não encontrado no container.${RESET}"
+
+        # Pergunta ao usuário se deseja instalar o Larastan
+        read -p "Deseja instalar o Larastan? (s/n): " INSTALL_LARASTAN
+
+        if [[ "$INSTALL_LARASTAN" =~ ^[Ss]$ ]]; then
+            echo -e "${AZUL}Instalando o Larastan...${RESET}"
+            docker-compose exec $SERVICE_NAME composer require larastan/larastan:^2.0 --dev
+            echo -e "${VERDE}Larastan instalado com sucesso!${RESET}"
+        else
+            echo -e "${VERMELHO}Análise de código cancelada.${RESET}"
+            return
+        fi
+    fi
+
+    # Verifica se o arquivo phpstan.neon existe
+    if ! [ -f "phpstan.neon" ]; then
+        echo -e "${AMARELO}Arquivo phpstan.neon não encontrado. Criando arquivo padrão...${RESET}"
+        cat << EOF > phpstan.neon
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+
+    # Level 9 is the highest level
+    level: 5
+    #    ignoreErrors:
+    #        - '#PHPDoc tag @var#'
+    #
+    #    excludePaths:
+    #        - ./*/*/FileToBeExcluded.php
+    #
+    #    checkMissingIterableValueType: false
+EOF
+        echo -e "${VERDE}Arquivo phpstan.neon criado com sucesso!${RESET}"
+    fi
+
+    # Executa o Larastan para analisar o código
+    docker-compose exec $SERVICE_NAME ./vendor/bin/phpstan analyse --memory-limit=2G
+    echo -e "${VERDE}Análise de código concluída.${RESET}"
+    ;;
+format)
+    # Formata o código automaticamente
+    docker-compose exec $SERVICE_NAME ./vendor/bin/pint
+    ;;
+fresh)
+    # Redefine o banco de dados
+    docker-compose exec $SERVICE_NAME php artisan migrate:fresh
+    ;;
+  *)
+    show_usage
+    ;;
+esac
