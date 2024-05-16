@@ -1,8 +1,16 @@
 ![Logo](https://i.postimg.cc/TYyLZP0m/Compass-1.jpg)
 
-## Compass: Ferramenta de Linha de Comando para Projetos Laravel com Docker Compose
+## Compass
 
 O script `compass` é uma ferramenta de linha de comando projetada para simplificar a interação com projetos Docker Compose, especialmente focado em projetos Laravel. Ele fornece uma interface conveniente para executar comandos comuns de desenvolvimento e manutenção diretamente através de um único ponto de entrada.
+
+## Por que criei se existe o Sail?
+
+O Compasso nasceu da minha experiência em um projeto Laravel que utilizava Docker, mas onde o Sail não era uma opção viável. A constante necessidade de acessar o shell do Docker para executar comandos básicos me motivou a criar uma ferramenta mais ágil e eficiente.
+
+O Compasso oferece uma interface de linha de comando simplificada, permitindo executar comandos Artisan, rodar testes, gerenciar serviços e muito mais, tudo sem a necessidade de entrar no container.
+
+Se você também já se sentiu frustrado com a complexidade de gerenciar um ambiente Laravel com Docker sem o Sail, o Compasso pode ser a solução que você procurava!
 
 ## Requisitos
 
